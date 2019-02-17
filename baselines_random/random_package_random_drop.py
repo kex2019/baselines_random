@@ -2,6 +2,7 @@ import robotic_warehouse.robotic_warehouse as warehouse
 import robotic_warehouse_utils.path_finder as path_finder
 import robotic_warehouse_utils.data_collection as data_collection
 import pandas as pd
+import numpy as np
 import random
 import time
 
@@ -20,23 +21,23 @@ class Robot():
             self.instruction_pointer += 1
             return instruction
 
-        position = robot[0]
-        drops = robot[1]
+        position = robot.position
+        packages = robot.packages
         """ If we are standing next to a package pick it up!"""
-        if len(drops) != self.capacity:
+        if len(packages) != self.capacity:
             instruction = None
-            for f, _ in free_packages:
-                if path_finder.l1norm_dist(position, f) == 1:
+            for fp in free_packages:
+                if path_finder.l1norm_dist(position, fp.start) == 1:
                     instruction = gym.PICKUP_INSTRUCTION
 
             if instruction != None:
                 return instruction
         """ If there is nothing to do and we have full capacity.. go drop shit."""
-        if len(drops) == self.capacity:
+        if len(packages) == self.capacity:
             """ IF l1 norm to a drop off == 1 then we can drop of the packages. """
             instruction = None
-            for drop in drops:
-                if path_finder.l1norm_dist(position, drop) == 1:
+            for package in packages:
+                if path_finder.l1norm_dist(position, package.dropoff) == 1:
                     instruction = gym.DROP_INSTRUCTION
 
             if instruction != None:
@@ -45,15 +46,15 @@ class Robot():
             self.instructions = self.pathfinder(
                 position,
                 self.pathfinder.available_pos_near(
-                    random.choice(drops))).get_instructions()
+                    random.choice(packages).dropoff)).get_instructions()
             self.instruction_pointer = 1
             return self.instructions[0]
         elif free_packages:
             """ If there is nothing to do, we dont have full capacity and there are packages waiting.. get them. """
-            target = random.choice(free_packages)[0]
+            target = random.choice(free_packages)
             self.instructions = self.pathfinder(
-                position,
-                self.pathfinder.available_pos_near(target)).get_instructions()
+                position, self.pathfinder.available_pos_near(
+                    target.start)).get_instructions()
             self.instruction_pointer = 1
             return self.instructions[0]
         else:
