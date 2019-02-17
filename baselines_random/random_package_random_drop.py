@@ -2,7 +2,6 @@ import robotic_warehouse.robotic_warehouse as warehouse
 import robotic_warehouse_utils.path_finder as path_finder
 import robotic_warehouse_utils.data_collection as data_collection
 import pandas as pd
-import numpy as np
 import random
 import time
 
