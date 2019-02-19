@@ -110,7 +110,7 @@ def evaluate(**kwargs):
     if "data" in kwargs:
         data = kwargs["data"]
 
-    output = "data/random_package_random_drop.csv"
+    output = "data"
     if "output" in kwargs:
         output = kwargs["output"]
 
