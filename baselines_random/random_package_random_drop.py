@@ -12,6 +12,7 @@ class Robot():
         self.instructions = []
         self.instruction_pointer = 0
         self.pathfinder = pathfinder
+        self.last_high_level_command_was_drop = False
 
     def __call__(self, gym, robot, free_packages) -> "instruction":
         """ IF there is something to do.. do it."""
@@ -32,13 +33,16 @@ class Robot():
             if instruction != None:
                 return instruction
         """ If there is nothing to do and we have full capacity.. go drop shit."""
-        if len(packages) == self.capacity:
+        if len(packages) == self.capacity or\
+                (self.last_high_level_command_was_drop and len(packages) >= 1) or\
+                (len(free_packages) == 0 and len(packages) >= 1):
             """ IF l1 norm to a drop off == 1 then we can drop of the packages. """
             instruction = None
             for package in packages:
                 if path_finder.l1norm_dist(position, package.dropoff) == 1:
                     instruction = gym.DROP_INSTRUCTION
 
+            self.last_high_level_command_was_drop = True
             if instruction != None:
                 return instruction
 
@@ -49,6 +53,7 @@ class Robot():
             self.instruction_pointer = 1
             return self.instructions[0]
         elif free_packages:
+            self.last_high_level_command_was_drop = False
             """ If there is nothing to do, we dont have full capacity and there are packages waiting.. get them. """
             target = random.choice(free_packages)
             self.instructions = self.pathfinder(
